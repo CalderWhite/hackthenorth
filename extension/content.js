@@ -1,5 +1,7 @@
 // this code runs on every page opened
 function scrapeFacebookMessanger(){
+  var exp = /t\/[a-zA-Z0-9]+/
+  if(window.location.href.toString().match(exp) == null){return}
   var messages = [];
   var chat = document.getElementsByClassName("_aok");
   // find the messages not from the current user.
@@ -34,6 +36,19 @@ function scrapeGmail(){
   return pkg
 }
 const index = {
-  "mail.google.com" : 
+  "mail.google.com" : scrapeGmail,
+  "https://www.facebook.com/messages/t/": scrapeFacebookMessanger
 }
-console.log("Hello World from content.")
+
+function main(){
+  var k = Object.keys(index);
+  for(i=0;i<k.length;i++){
+    console.log(window.location.href.toString(),k[i]);
+    if(window.location.href.toString().search(k[i]) > -1){
+      var data = index[k[i]]();
+      console.log(data);
+    }
+  }
+}
+console .log("Hello World from content.");
+main();
