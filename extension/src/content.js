@@ -2,23 +2,7 @@
 const $ = require('jquery');
 var wait = false;
 
-/* OLD CODE:::
-function scrapeGmail(){
-  var exp = /#inbox\/[a-zA-Z0-9]+/;
-  // check to see that they are in fact viewing an email, not just at their inbox
-  if(window.location.href.toString().match(exp) == null){return}
-  // grab the data
-  const from = document.getElementsByClassName("gD")[0].dataset.hovercardId;
-  const subject = document.getElementsByClassName("hP")[0].textContent;
-  const content = document.getElementsByClassName("aXjCH").innerHTML;
-  const pkg = {
-    "from" : from,
-    "subject" : subject,
-    "messages" : [content]
-  }
-  return pkg
-} :::: OLD CODE
-*/
+// scraping functions
 function scrapeFacebookMessanger(){
   var exp = /t\/[a-zA-Z0-9]+/
   if(window.location.href.toString().match(exp) == null){return}
@@ -34,35 +18,53 @@ function scrapeFacebookMessanger(){
       dump+=chat[i].innerHTML;
     }
   };
+  var nodes = [];
   var links = [];
   var tree = $.parseHTML("<div>"+dump+"</div>");
   $(tree).find('a').each(function() {
+    nodes.push(this);
     links.push($(this).attr('href'));
   });
-  return links;
+  return [nodes,links];
 }
 function scrapeGmail(){
+  var nodes = [];
   var links = [];
   $('.adn').find('a').each(function() {
+    nodes.push(this);
     links.push($(this).attr('href'));
   });
-  return links;
+  return [nodes,links];
 }
+
+// safe index
 const index = {
   "mail.google.com" : scrapeGmail,
   "https://www.facebook.com/messages/t/": scrapeFacebookMessanger
 }
+// Icon inserting function
+function markBadLinks(nodes,data){
+  // this could be optimized, but it doesn't really matter in the scheme of things.
+  for(i=0;i<nodes.length;i++){
+    if(!data[i]){
+      nodes[i].textContent = "YE BE HACKED";
+    }
+  }
+}
 
+// main function
 function main(){
   if(!wait){
     var k = Object.keys(index);
     for(var i=0;i<k.length;i++){
       if(window.location.href.toString().search(k[i]) > -1){
         var data = index[k[i]]();
-        chrome.runtime.sendMessage({
-          links : data,
-          data: ''
-        }
+        var nodes = data[0];
+        var links = data[1];
+        $.post( "127.0.0.1:8080/checkLinks", links)
+          .done(function(data){
+            markBadLinks(nodes,data)
+          });
       }
     }
     // throttling
@@ -72,10 +74,9 @@ function main(){
     },1000);
   }
 }
+
+// onload
 $(document).ready(main);
 $(document).bind('DOMSubtreeModified', function () {
   main();
 });
-
-
-console.log("Hello World from content.");
