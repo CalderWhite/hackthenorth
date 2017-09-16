@@ -1,0 +1,16 @@
+{
+  "name": "extension",
+  "version": "1.0.0",
+  "description": "Note: The names of the javascript files are important.",
+  "main": "content.js",
+  "scripts": {
+    "build": "browserify content.js -o content.js -t [ babelify --presets [ es2015 ] ] && browserify background.js -o background.js -t [ babelify --presets [ es2015 ] ]"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^7.3.0",
+    "browserify": "^14.4.0"
+  }
+}
