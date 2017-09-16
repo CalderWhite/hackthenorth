@@ -44,6 +44,7 @@ const index = {
 }
 // Icon inserting function
 function markBadLinks(nodes,data){
+  console.log(nodes);
   // this could be optimized, but it doesn't really matter in the scheme of things.
   for(i=0;i<nodes.length;i++){
     if(!data[i]){
@@ -61,10 +62,14 @@ function main(){
         var data = index[k[i]]();
         var nodes = data[0];
         var links = data[1];
-        $.post( "127.0.0.1:8080/checkLinks", links)
-          .done(function(data){
-            markBadLinks(nodes,data)
-          });
+        console.log("running")
+        chrome.runtime.sendMessage({
+          "links":links,
+          data:''
+        },function(res){
+          console.log("callback running.")
+          console.log(res);
+        })
       }
     }
     // throttling
@@ -80,3 +85,5 @@ $(document).ready(main);
 $(document).bind('DOMSubtreeModified', function () {
   main();
 });
+
+console.log("Hello world")
