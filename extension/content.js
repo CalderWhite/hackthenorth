@@ -19,9 +19,13 @@ function scrapeFacebookMessanger(){
   return {"messages":messages};
 }
 function scrapeGmail(){
+  var exp = /#inbox\/[a-zA-Z0-9]+/;
+  // check to see that they are in fact viewing an email, not just at their inbox
+  if(window.location.href.toString().match(exp) == null){return}
+  // grab the data
   const from = document.getElementsByClassName("gD")[0].dataset.hovercardId;
   const subject = document.getElementsByClassName("hP")[0].textContent;
-  const content = document.getElementById(":ey").textContent;
+  const content = document.getElementsByClassName("aXjCH").textContent;
   const pkg = {
     "from" : from,
     "subject" : subject,
@@ -29,5 +33,7 @@ function scrapeGmail(){
   }
   return pkg
 }
-
+const index = {
+  "mail.google.com" : 
+}
 console.log("Hello World from content.")
