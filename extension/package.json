@@ -4,7 +4,9 @@
   "description": "Note: The names of the javascript files are important.",
   "main": "content.js",
   "scripts": {
-    "build": "browserify ./src/content.js -o ./dist/content.js -t [ babelify --presets [ es2015 ] ] && browserify ./src/background.js -o ./dist/background.js -t [ babelify --presets [ es2015 ] ]"
+    "build": "browserify ./src/content.js -o ./dist/content.js -t [ babelify --presets [ es2015 ] ] && browserify ./src/background.js -o ./dist/background.js -t [ babelify --presets [ es2015 ] ]",
+	"watch": "watchify src/content.js -d -o bundle.js -v [ babelify --presets [es2015] ] && watchify src/background.js -d -o bundle.js -v [ babelify --presets [es2015] ]"
+  
   },
   "author": "",
   "license": "ISC",
