@@ -16,7 +16,7 @@ const authConfig = {
   headers: new Headers()
 };
 
-fetch(ENDPOINT + '/auth/login', authConfig)
+fetch(`${ENDPOINT}/auth/login`, authConfig)
 	.then(resp => resp.json())
 	.then(resp => {
 		console.log(resp);
