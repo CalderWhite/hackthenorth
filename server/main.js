@@ -48,19 +48,26 @@ function getSiteRatings(req, res) {
 	});
 
 	function genStatusArray(ipAddr, i) {
-		request.get(`https://api.cymon.io/v2/ioc/search/ip/${ipAddr}`)
-  		.on('response', function(response) {
-    	 	if (response && response.statusCode === 200) {
-    	 		console.log(response);
-  	 			ret[i] = isABadLink(response.body) ? true : false;
-    	 	} else {
-    	 		ret[i] = false;
-    	 	}
-    		console.log(response.headers['content-type']) // 'image/png'
-    		if (++count === total) {
-    				res.json({ data: ret });
-    		}
-  		});
+		if (!ipAddr) {
+			ret[i] = false;
+			if (++count === total) {
+    		res.json({ data: ret });
+    	}
+		} else {
+			request.get(`https://api.cymon.io/v2/ioc/search/ip/${ipAddr}`)
+	  		.on('response', function(response) {
+	    	 	if (response && response.statusCode === 200) {
+	    	 		console.log(response);
+	  	 			ret[i] = isABadLink(response.body) ? true : false;
+	    	 	} else {
+	    	 		ret[i] = false;
+	    	 	}
+	    		console.log(response.headers['content-type']) // 'image/png'
+	    		if (++count === total) {
+	    				res.json({ data: ret });
+	    		}
+	  		});
+	  }
 	}
 }
 
@@ -78,12 +85,16 @@ function getIpAddress(origurl, callback) {
 	        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.16 (KHTML, like Gecko) Chrome/24.0.1304.0 Safari/537.16'
 	    }
 	}
-	var x = 
 	request(options, function (err, res, body) {
-		if (res.headers.refresh !== 'undefined') {
-			console.log(res.headers.refresh);
+		if (err) {
+			callback(null);
 		}
-		dns.lookup(options, dns_options, (err, address, family) => { callback(address); });
+		let finalAddress = origurl;
+		if (res.headers.refresh !== 'undefined') {
+			let urlStart = res.headers.refresh.indexOf('URL=') + 'URL='.length;
+			finalAddress = res.headers.refresh.slice(urlStart);  
+		}
+		dns.lookup(finalAddress, dns_options, (err, address, family) => { callback(err ? null : address); });
 	});
 }
 
