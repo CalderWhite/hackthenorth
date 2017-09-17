@@ -49,7 +49,7 @@ function markBadLinks(nodes,data){
   // this could be optimized, but it doesn't really matter in the scheme of things.
   for(var i=0;i<nodes.length;i++){
     if(!data[i]){
-      nodes[i].textContent = "YE BE HACKED";
+      nodes[i].className = "e123456789"
     }
   }
 }
@@ -86,7 +86,9 @@ function main(){
 }
 
 // onload
-$(document).ready(main);
+$(document).ready(function(){
+  $('head').append('<style>.e123456789::after {content: "x"}</style>')
+});
 $(document).bind('DOMSubtreeModified', function () {
   main();
 });
