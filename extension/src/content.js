@@ -1,54 +1,94 @@
 // this code runs on every page opened
+const $ = require('jquery');
+var wait = false;
+
+// scraping functions
 function scrapeFacebookMessanger(){
   var exp = /t\/[a-zA-Z0-9]+/
   if(window.location.href.toString().match(exp) == null){return}
-  var messages = [];
+
+
   var chat = document.getElementsByClassName("_aok");
+
+  var dump = ""
   // find the messages not from the current user.
   var last = true;
   for (var i = 0;i<chat.length; i++) {
     if(chat[i].parentElement.dataset.tooltipPosition === "left"){
-      if(last){
-        messages.push([chat[i].textContent]);
-      } else{
-        messages[messages.length-1].push(chat[i].textContent);
-      }
-      last = false;
-    } else{
-      last = true;
+      dump+=chat[i].innerHTML;
     }
   };
-  return {"messages":messages};
+  var nodes = [];
+  var links = [];
+  var tree = $.parseHTML("<div>"+dump+"</div>");
+  $(tree).find('a').each(function() {
+    nodes.push(this);
+    links.push($(this).attr('href'));
+  });
+  return [nodes,links];
 }
 function scrapeGmail(){
-  var exp = /#inbox\/[a-zA-Z0-9]+/;
-  // check to see that they are in fact viewing an email, not just at their inbox
-  if(window.location.href.toString().match(exp) == null){return}
-  // grab the data
-  const from = document.getElementsByClassName("gD")[0].dataset.hovercardId;
-  const subject = document.getElementsByClassName("hP")[0].textContent;
-  const content = document.getElementsByClassName("aXjCH").textContent;
-  const pkg = {
-    "from" : from,
-    "subject" : subject,
-    "messages" : [content]
-  }
-  return pkg
+  var nodes = [];
+  var links = [];
+  $('.adn').find('a').each(function() {
+    nodes.push(this);
+    links.push($(this).attr('href'));
+  });
+  return [nodes,links];
 }
+
+// safe index
 const index = {
   "mail.google.com" : scrapeGmail,
   "https://www.facebook.com/messages/t/": scrapeFacebookMessanger
 }
-
-function main(){
-  var k = Object.keys(index);
-  for(i=0;i<k.length;i++){
-    console.log(window.location.href.toString(),k[i]);
-    if(window.location.href.toString().search(k[i]) > -1){
-      var data = index[k[i]]();
-      console.log(data);
+// Icon inserting function
+function markBadLinks(nodes,data){
+  console.log("test")
+  console.log(nodes,data);
+  // this could be optimized, but it doesn't really matter in the scheme of things.
+  for(var i=0;i<nodes.length;i++){
+    if(!data[i]){
+      nodes[i].textContent = "YE BE HACKED";
     }
   }
 }
-console .log("Hello World from content.");
-main();
+
+// main function
+function main(){
+  if(!wait){
+    var k = Object.keys(index);
+    for(var i=0;i<k.length;i++){
+      if(window.location.href.toString().search(k[i]) > -1){
+        var data = index[k[i]]();
+        var nodes = data[0];
+        var links = data[1];
+        console.log("running")
+        chrome.runtime.sendMessage({
+          "links":links,
+          data:''
+        },function(res){
+          console.log(res)
+          if(res == null){
+            alert("An error occurred in background.js");
+          } else{
+            markBadLinks(nodes,res);
+          }
+        })
+      }
+    }
+    // throttling
+    wait = true;
+    setTimeout(function(){
+      wait=false;
+    },1000);
+  }
+}
+
+// onload
+$(document).ready(main);
+$(document).bind('DOMSubtreeModified', function () {
+  main();
+});
+
+console.log("Hello world")

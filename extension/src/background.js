@@ -1,23 +1,17 @@
 // this code can run in the background, but is currently set to work with events.
 // Google: chrome.runtime.onMessage.addListener
+const HOST = "127.0.0.1"
+const PORT = "8080"
+const $ = require('jquery');
 
-const ENDPOINT = 'https://api.cymon.io/v2';
-const USERNAME = 'htn2017';
-const PASSWD = 'hackthenorth';
-
-let myHeaders = new Headers();
-
-const authConfig = {
-  method: 'POST',
-  body: {
-    username: USERNAME,
-    password: PASSWD
-  },
-  headers: new Headers()
-};
-
-fetch(ENDPOINT + '/auth/login', authConfig)
-	.then(resp => resp.json())
-	.then(resp => {
-		console.log(resp);
-	});
+chrome.runtime.onMessage.addListener(function(request, sender, callback) {  
+  $.post("http://"+HOST+":"+PORT+"/api",{links:request.links})
+    .done(function(data){
+      //const j = JSON.parse(data);
+      callback(data);
+    })
+    .fail(function(data){
+      callback(null);
+    })
+    return true;
+});
