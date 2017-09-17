@@ -36,6 +36,36 @@ app.use('/api', router);
 
 router.route('/')
 	.post(getSiteRatings);
+
+router.route('/report')
+	.post(genReport);
+
+function genReport() {
+	var body = [];
+	input.forEach(report => {
+		body.push({
+			feed_id: 'AV6Ose5vdgijOqSiMyIp',
+			title: report.title,
+			description: report.description,
+			tags: ['malware'],
+			ioc: {'url': report.url}
+		})
+	})
+		request({
+  			method: 'POST',
+  			url: 'https://api.cymon.io/v2/ioc/submit/bulk',
+  			headers: {
+    				'Content-Type': 'application/json',
+    				'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc19wcmVtaXVtIjowLCJpc19zdXBlcnVzZXIiOjAsImRhdGVfam9pbmVkIjoiMjAxNy0wOS0xN1QwNToxNDo1OC43NDBaIiwidXNlcm5hbWUiOiJodG4yMDE3IiwiaXNfYWN0aXZlIjoxLCJsYXN0X2xvZ2luIjoiMjAxNy0wOS0xN1QwNjozOTo0Ni41MzdaIiwiaXNfc3RhZmYiOjAsImlhdCI6MTUwNTYzMjQ1OSwiZXhwIjoxNTA1Njc1NjU5fQ.pWnbCNqUBcfFc5KmjbPfp5FBatDhFZUqaf2vfEJ6z2Q'
+  					},
+  			body: body
+			},
+			function (error, response, body) {
+  				console.log('Status:', response.statusCode);
+  				console.log('Headers:', JSON.stringify(response.headers));
+  				console.log('Response:', response.body);
+			});}
+
 request({
   method: 'POST',
   url: 'https://api.cymon.io/v2/auth/login',
@@ -49,31 +79,22 @@ request({
   console.log('Response:', response.body);
   token = JSON.parse(response.body).jwt;
   console.log(token);
-  //request.get(`https://api.cymon.io/v2/ioc/search/ip/103.35.165.105`,
-	//			{'auth': {'bearer': token}}, function(err, response, body) {
-	  //  	 	if (response && response.statusCode === 200) {
-	    //	 		console.log("Works");
-	    //	 		console.log(body);
-	  	 			//ret[i] = isABadLink(response.body) ? true : false;
-	    //	 	} else {
-	    	 		//ret[i] = false;
-	    //	 	}
-	    //	 });
 });
+
+
 function getSiteRatings(req, res) {
 	if(req.body.links == undefined){return}
 	let total = req.body.links.length,
 			count = 0
-			ret = [];
-	req.body.links.forEach((link, i) => {
+			ret = {};
+	req.body.links.forEach((link) => {
 		getIpAddress(link, (ipAddr) => {
-			genStatusArray(ipAddr, i);
+			genStatusObj(ipAddr);
 		});
 	});
 
-	function genStatusArray(ipAddr, i) {
+	function genStatusArray(ipAddr) {
 		if (!ipAddr) {
-			ret[i] = false;
 			if (++count === total) {
     		res.json({ data: ret });
     	}
@@ -82,13 +103,13 @@ function getSiteRatings(req, res) {
 				{'auth': {'bearer': token}}, function(err, response, body) {
 	    	 	if (response && response.statusCode === 200) {
 	    	 		console.log(response);
-	  	 			ret[i] = isMalLink(body) ? true : false;
+	  	 			if (isMalLink(body)) {
+							ret[ipAddr] = '';
+	  	 			}
 	  	 			console.log('Link works');
 	    	 	} else {
-	    	 		ret[i] = false;
 	    	 		console.log('Link does not work');
 	    	 	}
-	    		console.log(response.headers['content-type']) // 'image/png'
 	    		if (++count === total) {
 	    				res.json({ data: ret });
 	    		}
@@ -98,7 +119,8 @@ function getSiteRatings(req, res) {
 }
 
 function isMalLink(cymonResponse) {
-	return cymonRespone.total > 0;
+	console.log(cymonResponse);
+	return cymonResponse.total > 0;
 }
 
 function getIpAddress(origurl, callback) {
