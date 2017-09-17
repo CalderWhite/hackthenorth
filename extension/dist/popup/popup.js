@@ -1,31 +1,6 @@
 // code that will run when the extension icon is clicked.
 
-function showMsg() {
-	document.getElementById("msg").innerHTML = "Hover over the malicious link and press A";
 
-	setTimeout(function(){
-	    document.getElementById("msg").innerHTML = '';
-	}, 3000);
-}
-
-/*
-function mouseCoordinate(e) {
-    var x = e.pageX;
-    var y = e.pageY;
-    var el = document.elementFromPoint(x, y);
-		console.log(el);
-    //alert("User clicked at position (" + x + "," + y + ")")
-};
-
-
-
-document.onmousemove = function(e) {
-	var x = e.pageX;
-    var y = e.pageY;
-    var el = document.elementFromPoint(x, y);
-		console.log(el);
-}
-*/
 document.addEventListener('DOMContentLoaded', function(e) {
 	var button = document.getElementById("picker");
 	var summary = document.getElementById("summary");
@@ -36,14 +11,24 @@ document.addEventListener('DOMContentLoaded', function(e) {
 		document.getElementById("msg").innerHTML = "Processing your report...";
 		setTimeout(function(){
 	    	document.getElementById("msg").innerHTML = '';
-		}, 3000);
+		}, 1000);
+
+		chrome.runtime.sendMessage({
+          "title":descrip,
+          "url":url
+        },function(res){
+          if(res === null){
+            console.log(res);
+            //alert("An error occurred in background.js");
+          } else{
+          	document.getElementById("msg").innerHTML = "Report Sent!";
+			setTimeout(function(){
+		    	document.getElementById("msg").innerHTML = '';
+			}, 2000);
+          }
+        })
 				
 	});
 
-	button.addEventListener('keypress', function(e) {
-	   	const tab = chrome.tabs.query({ active: true, currentWindow: true })[0];
-		console.log(tab);
-	   	invisibleBtn.click();
-	});	
 
 })
