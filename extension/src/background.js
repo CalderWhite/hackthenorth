@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
 	  callback(data);
 	})
 	.fail(function(data){
-	  callback({links:request.links,err:true});
+	  callback(null);
 	})
 	return true;
 });
