@@ -44,7 +44,6 @@ const index = {
 }
 // Icon inserting function
 function markBadLinks(nodes,data){
-  console.log("test")
   console.log(nodes,data);
   // this could be optimized, but it doesn't really matter in the scheme of things.
   for(var i=0;i<nodes.length;i++){
@@ -63,14 +62,13 @@ function main(){
         var data = index[k[i]]();
         var nodes = data[0];
         var links = data[1];
-        console.log("running")
         chrome.runtime.sendMessage({
           "links":links,
           data:''
         },function(res){
-          console.log(res)
-          if(res == null){
-            alert("An error occurred in background.js");
+          if(res.err){
+            console.log(res);
+            //alert("An error occurred in background.js");
           } else{
             markBadLinks(nodes,res);
           }
