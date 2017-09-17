@@ -86,17 +86,18 @@ request({
 
 function getSiteRatings(req, res) {
 	currDate = new Date();
-	if(req.body.links == undefined){return}
+	if(req.body.links === undefined) {
+		res.json({ data: null });
+		return;
+	}
 	let total = req.body.links.length,
 			count = 0
 			ret = {};
 	req.body.links.forEach((link) => {
-		getIpAddress(link, (ipAddr) => {
-			genStatusObj(ipAddr);
-		});
+		getIpAddress(link, genStatusObj);
 	});
 
-	function genStatusArray(ipAddr) {
+	function genStatusObj(ipAddr) {
 		if (!ipAddr) {
 			if (++count === total) {
     		res.json({ data: ret });
@@ -104,13 +105,15 @@ function getSiteRatings(req, res) {
 		} else {
 			let currYear = currDate.getFullYear();
 			let month = currDate.getMonth();
-			if (month.length === 1) {
+			console.log(month)
+			if (month.toString().length === 1) {
 				month = '0' + month;
 			}
 			let day = currDate.getDay();
-			request.get(`https://api.cymon.io/v2/ioc/search/ip/${ipAddr}?
-									 startDate=${currYear - 1}-${month}-${day}&endDate=${currYear}-${month}-${day}`,
-				{'auth': {'bearer': token}}, function(err, response, body) {
+			let reqURL = `https://api.cymon.io/v2/ioc/search/ip/${ipAddr}?startDate=${currYear - 1}-${month}-${day}&endDate=${currYear}-${month}-${day}`;
+			console.log(reqURL)
+			request.get(reqURL,{ auth: {bearer: token}}, function(err, response, body) {
+					console.log("body: ", body);
 	    	 	if (response && response.statusCode === 200) {
 	    	 		console.log(response);
 	  	 			if (isMalLink(body)) {
@@ -118,7 +121,7 @@ function getSiteRatings(req, res) {
 	  	 			}
 	  	 			console.log('Link works');
 	    	 	} else {
-	    	 		console.log('Link does not work');
+	    	 		console.log(err);
 	    	 	}
 	    		if (++count === total) {
 	    				res.json({ data: ret });
@@ -144,15 +147,17 @@ function getIpAddress(origurl, callback) {
 	    }
 	}
 	request(options, function (err, res, body) {
+		console.log("HEAD REQ:", res.statusCode);
 		if (err) {
 			callback(null);
+			return;
 		}
 		let finalAddress = origurl;
 		if (res.headers.refresh !== undefined) {
 			let urlStart = res.headers.refresh.indexOf('URL=') + 'URL='.length;
 			finalAddress = res.headers.refresh.slice(urlStart);  
 		}
-		dns.lookup(finalAddress, dns_options, (err, address, family) => { callback(err ? null : address); });
+		dns.lookup('google.com', dns_options, (err, address, family) => { console.log("IPADDR:", address);callback(err ? null : address); });
 	});
 }
 

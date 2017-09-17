@@ -5,12 +5,12 @@ const PORT = "8080"
 const $ = require('jquery');
 
 chrome.runtime.onMessage.addListener(function(request, sender, callback) {
+	if (!request || !request.links) return;
 	$.post("http://"+HOST+":"+PORT+"/api",{links:request.links})
 	.done(function(data){
-	  //const j = JSON.parse(data);
 	  callback(data);
 	})
-	.fail(function(data){
+	.fail(function(){
 	  callback(null);
 	})
 	return true;

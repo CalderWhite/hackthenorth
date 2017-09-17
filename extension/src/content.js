@@ -5,28 +5,24 @@ var wait = false;
 // scraping functions
 function scrapeFacebookMessanger(){
   var exp = /t\/[a-zA-Z0-9]+/
-  if(window.location.href.toString().match(exp) == null){return}
-
+  if(window.location.href.toString().match(exp) == null) {
+    return null;
+  }
 
   var chat = document.getElementsByClassName("_aok");
 
-  var dump = ""
-  // find the messages not from the current user.
-  var last = true;
-  for (var i = 0;i<chat.length; i++) {
-    if(chat[i].parentElement.dataset.tooltipPosition === "left"){
-      dump+=chat[i].innerHTML;
-    }
-  };
+  // find the message
   var nodes = [];
   var links = [];
-  var tree = $.parseHTML("<div>"+dump+"</div>");
-  $(tree).find('a').each(function() {
-    nodes.push(this);
-    links.push($(this).attr('href'));
-  });
+  for (let i = 0;i<chat.length; i++) {
+    nodes.push(chat[i]);
+    $(chat[i]).find('a').each(function() {
+      links.push($(this).attr('href'));
+    });
+  }
   return [nodes,links];
 }
+
 function scrapeGmail(){
   var nodes = [];
   var links = [];
@@ -37,6 +33,7 @@ function scrapeGmail(){
   return [nodes,links];
 }
 function scrapeFbMini(){
+  return [[], []];
   var parents = $("._d97");
   var nodes = [];
   var links = [];
@@ -58,11 +55,9 @@ const index = {
 function markBadLinks(data){
   console.log(data);
   // this could be optimized, but it doesn't really matter in the scheme of things.
-  for(var i=0; i<Object.keys(data).length; i++){
-    if(!data[i]){
-      nodes[i].className = "e123456789";
-    }
-  }
+  Object.keys(data).forEach(link => {
+    $(`#${link}`).css("display", "none");
+  });
 }
 
 // main function
@@ -72,19 +67,23 @@ function main(){
     for(var i=0;i<k.length;i++){
       if(window.location.href.toString().search(k[i]) > -1){
         var data = index[k[i]]();
+        if (!data) {
+          return;
+        }
         var nodes = data[0];
         var links = data[1];
         for(var j=0;j<nodes.length;j++){
           nodes[j].id=links[j];
         }
+        console.log("SHOULD HAVE NODES")
         chrome.runtime.sendMessage({
           "links":links,
-          data:''
+          "data":''
         },function(res){
           if(res === null){
-            console.log(res);
+            console.log("RESULT FAILURE");
             //alert("An error occurred in background.js");
-          } else{
+          } else {
             markBadLinks(links,res);
           }
         })
@@ -100,10 +99,9 @@ function main(){
 
 // onload
 $(document).ready(function(){
-  $('head').append('<style>.e123456789::after {content: "x";}</style>')
+  $('head').append('<style>.e123456789::after {content: "x";}</style>');
+  main();
 });
 $(document).bind('DOMSubtreeModified', function () {
   main();
 });
-
-console.log("Hello World.")
