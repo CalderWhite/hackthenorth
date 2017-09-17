@@ -6,7 +6,7 @@
  -->
 <html>
   <head>
-    <title>Lorem Ipsum</title>
+    <title>Protec</title>
 
     <!--
       - JavaScript and HTML must be in separate files: see our Content Security
@@ -18,7 +18,30 @@
     <script src="popup.js"></script>
   </head>
   <body>
-    <h1>This is a test.</h1>
+    <div class="header">
+        <h1 style="margin-top: 2px;">Protec</h1>      
+    </div>
+    <div class="list">
+      <div class="wrap">
+        <div id="onoff"> 
+          <p style="margin-top: 2px;">On/Off</p>
+        </div>
+        <div id="switcher">
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+      <br>
+      <center>
+      <br>
+      <hr>
+      <h3>Report a threat</h3>
+      <input type="image" src="picker.png" id="picker" alt="Submit" width="50" height="50">
+      <div id="msg"></div>
+      </center>
+    </div>
   </body>
 </html>
 
