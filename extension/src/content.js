@@ -44,9 +44,10 @@ const index = {
 }
 // Icon inserting function
 function markBadLinks(nodes,data){
-  console.log(nodes);
+  console.log("test")
+  console.log(nodes,data);
   // this could be optimized, but it doesn't really matter in the scheme of things.
-  for(i=0;i<nodes.length;i++){
+  for(var i=0;i<nodes.length;i++){
     if(!data[i]){
       nodes[i].textContent = "YE BE HACKED";
     }
@@ -67,8 +68,12 @@ function main(){
           "links":links,
           data:''
         },function(res){
-          console.log("callback running.")
-          console.log(res);
+          console.log(res)
+          if(res == null){
+            alert("An error occurred in background.js");
+          } else{
+            markBadLinks(nodes,res);
+          }
         })
       }
     }
