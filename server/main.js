@@ -58,10 +58,15 @@ function getIpAddress(origurl) {
 	        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.16 (KHTML, like Gecko) Chrome/24.0.1304.0 Safari/537.16'
 	    }
 	}
-
+	var x = 
 	request(options, function (err, res, body) {
-		if (res.headers.refresh === 'undefined') {
-			
+		if (res.headers.refresh !== 'undefined') {
+			console.log(res.headers.refresh);
 		}
+	const dns_options = {family: 4, hints: dns.ADDRCONFIG | dns.V4MAPPED,};
+			dns.lookup(options, dns_options, (err, address, family) =>
+  			return address;
+
+	
 	});
 }
