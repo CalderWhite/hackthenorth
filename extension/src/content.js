@@ -36,11 +36,23 @@ function scrapeGmail(){
   });
   return [nodes,links];
 }
-
+function scrapeFbMini(){
+  var parents = $("._d97");
+  var nodes = [];
+  var links = [];
+  for(var i=0;i<parents.length;i++){
+    var a = $(parents[i]).find("a").each(function() {
+    nodes.push(this);
+    links.push($(this).attr('href'));
+  });
+  }
+  return [nodes,links];
+}
 // safe index
 const index = {
   "mail.google.com" : scrapeGmail,
-  "https://www.facebook.com/messages/t/": scrapeFacebookMessanger
+  "https://www.facebook.com/messages/t/": scrapeFacebookMessanger,
+  "https://www.facebook.com": scrapeFbMini
 }
 // Icon inserting function
 function markBadLinks(nodes,data){
@@ -91,4 +103,4 @@ $(document).bind('DOMSubtreeModified', function () {
   main();
 });
 
-console.log("Hello world")
+console.log("Hello World.")
