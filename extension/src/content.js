@@ -58,7 +58,7 @@ const index = {
 function markBadLinks(data){
   console.log(data);
   // this could be optimized, but it doesn't really matter in the scheme of things.
-  for(var i=0;i<Object.keys(data).length;i++){
+  for(var i=0; i<Object.keys(data).length; i++){
     if(!data[i]){
       nodes[i].className = "e123456789";
     }

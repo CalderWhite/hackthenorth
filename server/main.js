@@ -9,7 +9,7 @@ var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var request 	 = require('request');
 const dns 		 = require('dns');
-var token;
+var token, currDate;
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -37,10 +37,13 @@ app.use('/api', router);
 router.route('/')
 	.post(getSiteRatings);
 
-router.route('/report')
+router.route('/reports')
 	.post(genReport);
 
-function genReport() {}
+function genReport() {
+
+}
+
 
 request({
   method: 'POST',
@@ -58,6 +61,7 @@ request({
 });
 
 function getSiteRatings(req, res) {
+	currDate = new Date();
 	if(req.body.links == undefined){return}
 	let total = req.body.links.length,
 			count = 0
@@ -74,7 +78,14 @@ function getSiteRatings(req, res) {
     		res.json({ data: ret });
     	}
 		} else {
-			request.get(`https://api.cymon.io/v2/ioc/search/ip/${ipAddr}`,
+			let currYear = currDate.getFullYear();
+			let month = currDate.getMonth();
+			if (month.length === 1) {
+				month = '0' + month;
+			}
+			let day = currDate.getDay();
+			request.get(`https://api.cymon.io/v2/ioc/search/ip/${ipAddr}?
+									 startDate=${currYear - 1}-${month}-${day}&endDate=${currYear}-${month}-${day}`,
 				{'auth': {'bearer': token}}, function(err, response, body) {
 	    	 	if (response && response.statusCode === 200) {
 	    	 		console.log(response);
