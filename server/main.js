@@ -49,17 +49,16 @@ request({
   console.log('Response:', response.body);
   token = JSON.parse(response.body).jwt;
   console.log(token);
-  request.get(`https://api.cymon.io/v2/ioc/search/ip/172.217.0.228`,
-				{'auth': {'bearer': token}})
-	  		.on('response', function(response) {
-	    	 	if (response && response.statusCode === 200) {
-	    	 		console.log("Works");
-	    	 		console.log(response.body);
+  //request.get(`https://api.cymon.io/v2/ioc/search/ip/103.35.165.105`,
+	//			{'auth': {'bearer': token}}, function(err, response, body) {
+	  //  	 	if (response && response.statusCode === 200) {
+	    //	 		console.log("Works");
+	    //	 		console.log(body);
 	  	 			//ret[i] = isABadLink(response.body) ? true : false;
-	    	 	} else {
+	    //	 	} else {
 	    	 		//ret[i] = false;
-	    	 	}
-	    	 });
+	    //	 	}
+	    //	 });
 });
 function getSiteRatings(req, res) {
 	if(req.body.links == undefined){return}
@@ -80,13 +79,14 @@ function getSiteRatings(req, res) {
     	}
 		} else {
 			request.get(`https://api.cymon.io/v2/ioc/search/ip/${ipAddr}`,
-				{'auth': {'bearer': token}})
-	  		.on('response', function(response) {
+				{'auth': {'bearer': token}}, function(err, response, body) {
 	    	 	if (response && response.statusCode === 200) {
 	    	 		console.log(response);
-	  	 			ret[i] = isABadLink(response.body) ? true : false;
+	  	 			ret[i] = isMalLink(body) ? true : false;
+	  	 			console.log('Link works');
 	    	 	} else {
 	    	 		ret[i] = false;
+	    	 		console.log('Link does not work');
 	    	 	}
 	    		console.log(response.headers['content-type']) // 'image/png'
 	    		if (++count === total) {
@@ -98,7 +98,7 @@ function getSiteRatings(req, res) {
 }
 
 function isMalLink(cymonResponse) {
-	return false;
+	return cymonRespone.total > 0;
 }
 
 function getIpAddress(origurl, callback) {
