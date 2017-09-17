@@ -9,7 +9,7 @@ var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
 var request 	 = require('request');
 const dns 		 = require('dns');
-
+var token;
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -36,7 +36,31 @@ app.use('/api', router);
 
 router.route('/')
 	.post(getSiteRatings);
-
+request({
+  method: 'POST',
+  url: 'https://api.cymon.io/v2/auth/login',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: "{  \"username\": \"htn2017\",  \"password\": \"hackthenorth\"}"
+}, function (error, response, body) {
+  console.log('Status:', response.statusCode);
+  console.log('Headers:', JSON.stringify(response.headers));
+  console.log('Response:', response.body);
+  token = JSON.parse(response.body).jwt;
+  console.log(token);
+  request.get(`https://api.cymon.io/v2/ioc/search/ip/172.217.0.228`,
+				{'auth': {'bearer': token}})
+	  		.on('response', function(response) {
+	    	 	if (response && response.statusCode === 200) {
+	    	 		console.log("Works");
+	    	 		console.log(response.body);
+	  	 			//ret[i] = isABadLink(response.body) ? true : false;
+	    	 	} else {
+	    	 		//ret[i] = false;
+	    	 	}
+	    	 });
+});
 function getSiteRatings(req, res) {
 	if(req.body.links == undefined){return}
 	let total = req.body.links.length,
@@ -55,7 +79,8 @@ function getSiteRatings(req, res) {
     		res.json({ data: ret });
     	}
 		} else {
-			request.get(`https://api.cymon.io/v2/ioc/search/ip/${ipAddr}`)
+			request.get(`https://api.cymon.io/v2/ioc/search/ip/${ipAddr}`,
+				{'auth': {'bearer': token}})
 	  		.on('response', function(response) {
 	    	 	if (response && response.statusCode === 200) {
 	    	 		console.log(response);
