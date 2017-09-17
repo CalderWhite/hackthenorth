@@ -48,7 +48,6 @@ function markBadLinks(nodes,data){
   // this could be optimized, but it doesn't really matter in the scheme of things.
   for(var i=0;i<nodes.length;i++){
     if(!data[i]){
-      console.log(nodes[i]);
       nodes[i].className = "e123456789";
     }
   }
@@ -67,7 +66,7 @@ function main(){
           "links":links,
           data:''
         },function(res){
-          if(res.err){
+          if(res === null){
             console.log(res);
             //alert("An error occurred in background.js");
           } else{
