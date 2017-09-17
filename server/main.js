@@ -38,10 +38,11 @@ router.route('/')
 	.post(getSiteRatings);
 
 function getSiteRatings(req, res) {
-	let total = req.links.length,
+	if(req.body.links == undefined){return}
+	let total = req.body.links.length,
 			count = 0
 			ret = [];
-	req.links.forEach((link, i) => {
+	req.body.links.forEach((link, i) => {
 		getIpAddress(link, (ipAddr) => {
 			genStatusArray(ipAddr, i);
 		});
