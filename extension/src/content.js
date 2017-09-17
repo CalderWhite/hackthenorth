@@ -52,11 +52,11 @@ const index = {
   "https://www.facebook.com": scrapeFbMini
 }
 // Icon inserting function
-function markBadLinks(data){
+function markBadLinks(data, res){
   console.log(data);
   // this could be optimized, but it doesn't really matter in the scheme of things.
   Object.keys(data).forEach(link => {
-    $(`#${link}`).css("display", "none");
+    $(`#${link}`).css("border", "1px solid #cc0033");
   });
 }
 
