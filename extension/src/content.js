@@ -48,7 +48,8 @@ function markBadLinks(nodes,data){
   // this could be optimized, but it doesn't really matter in the scheme of things.
   for(var i=0;i<nodes.length;i++){
     if(!data[i]){
-      nodes[i].className = "e123456789"
+      console.log(nodes[i]);
+      nodes[i].className = "e123456789";
     }
   }
 }
