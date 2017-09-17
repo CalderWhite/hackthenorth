@@ -34,9 +34,12 @@ app.use('/api', router);
 router.route('/')
 
 	.post(function(req, res) {
-		req.links.forEach(function(link) {
-			getActualUrl(link, sendRequest)
-		})
+		let count = req.links.length;
+		req.links.forEach((link, i) => {
+			getIpAddress(link, (ipAddr) => {
+				genStatusArray(ipAddr, i)
+			});
+		});
 		res.json({ message: "Success!"});
 	})
 
@@ -45,7 +48,7 @@ router.route('/')
 app.listen(port);
 console.log('Server running on port ' + port);
 
-function getActualUrl(origurl) {
+function getIpAddress(origurl) {
 	const options = {  
 	    url: origurl,
 	    method: 'HEAD',
