@@ -33,15 +33,14 @@ function scrapeGmail(){
   return [nodes,links];
 }
 function scrapeFbMini(){
-  return [[], []];
   var parents = $("._d97");
   var nodes = [];
   var links = [];
   for(var i=0;i<parents.length;i++){
-    var a = $(parents[i]).find("a").each(function() {
-    nodes.push(this);
-    links.push($(this).attr('href'));
-  });
+    $(parents[i]).find("a").each(function() {
+      nodes.push(this);
+      links.push($(this).attr('href'));
+    });
   }
   return [nodes,links];
 }
@@ -52,12 +51,15 @@ const index = {
   "https://www.facebook.com": scrapeFbMini
 }
 // Icon inserting function
-function markBadLinks(data, res){
-  console.log(data);
-  // this could be optimized, but it doesn't really matter in the scheme of things.
-  Object.keys(data).forEach(link => {
-    $(`#${link}`).css("border", "1px solid #cc0033");
-  });
+function markBadLinks(resp){
+  if (resp && resp.data) {
+    console.log("DATA:", resp);
+    // this could be optimized, but it doesn't really matter in the scheme of things.
+    resp.data.forEach(link => {
+      console.log($('a[href="' + link + '"]').length)
+      $('a[href="' + link + '"]').css("outline", "1px solid  #cc0033");
+    });
+  }
 }
 
 // main function
@@ -70,12 +72,9 @@ function main(){
         if (!data) {
           return;
         }
+
         var nodes = data[0];
         var links = data[1];
-        for(var j=0;j<nodes.length;j++){
-          nodes[j].id=links[j];
-        }
-        console.log("SHOULD HAVE NODES")
         chrome.runtime.sendMessage({
           "links":links,
           "data":''
@@ -84,7 +83,8 @@ function main(){
             console.log("RESULT FAILURE");
             //alert("An error occurred in background.js");
           } else {
-            markBadLinks(links,res);
+            console.log(res)
+            markBadLinks(res);
           }
         })
       }

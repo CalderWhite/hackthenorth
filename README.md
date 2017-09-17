@@ -1,6 +1,5 @@
 # hackthenorth
-Food Recognition.
+Sketchy
 
-*note : all ingredients are in grams
+A chrome extension to improve security on online human interaction.
 
-Api endpoint: http://localhost:8080/api/nutritionVals
