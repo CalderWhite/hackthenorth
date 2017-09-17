@@ -58,10 +58,9 @@ function markBadLinks(resp){
     // this could be optimized, but it doesn't really matter in the scheme of things.
     resp.data.forEach(link => {
       console.log($('a[href="' + link + '"]').length)
-      $('a[href="' + link + '"]').css("outline", "1px solid red");
+      $('a[href="' + link + '"]').css("outline", "1px solid  #cc0033");
     });
   }
-}
 
 // main function
 function main(){
