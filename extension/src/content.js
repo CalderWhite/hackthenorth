@@ -86,7 +86,7 @@ function main(){
 
 // onload
 $(document).ready(function(){
-  $('head').append('<style>.e123456789::after {content: "x"}</style>')
+  $('head').append('<style>.e123456789::after {content: "x";}</style>')
 });
 $(document).bind('DOMSubtreeModified', function () {
   main();
