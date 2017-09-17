@@ -52,12 +52,15 @@ const index = {
   "https://www.facebook.com": scrapeFbMini
 }
 // Icon inserting function
-function markBadLinks(data){
-  console.log(data);
-  // this could be optimized, but it doesn't really matter in the scheme of things.
-  Object.keys(data).forEach(link => {
-    $(`#${link}`).css("display", "none");
-  });
+function markBadLinks(resp){
+  if (resp && resp.data) {
+    console.log("DATA:", resp);
+    // this could be optimized, but it doesn't really matter in the scheme of things.
+    resp.data.forEach(link => {
+      console.log($('a[href="' + link + '"]').length)
+      $('a[href="' + link + '"]').css("outline", "1px solid red");
+    });
+  }
 }
 
 // main function
@@ -84,7 +87,7 @@ function main(){
             console.log("RESULT FAILURE");
             //alert("An error occurred in background.js");
           } else {
-            markBadLinks(links,res);
+            markBadLinks(res);
           }
         })
       }

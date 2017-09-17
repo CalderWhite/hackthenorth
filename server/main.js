@@ -92,48 +92,47 @@ function getSiteRatings(req, res) {
 	}
 	let total = req.body.links.length,
 			count = 0
-			ret = {};
+			ret = [];
 	req.body.links.forEach((link) => {
 		getIpAddress(link, genStatusObj);
 	});
 
-	function genStatusObj(ipAddr) {
+	function genStatusObj(ipAddr, origUrl) {
 		if (!ipAddr) {
 			if (++count === total) {
+				console.log("RETURN: ", ret)
     		res.json({ data: ret });
     	}
 		} else {
 			let currYear = currDate.getFullYear();
 			let month = currDate.getMonth();
-			console.log(month)
 			if (month.toString().length === 1) {
-				month = '0' + month;
+				month = '0' + (month-1);
 			}
-			let day = currDate.getDay();
+			let day = currDate.getDate();
+			if (day.toString().length ===1) {
+				day = '0'+ day;
+			}
 			let reqURL = `https://api.cymon.io/v2/ioc/search/ip/${ipAddr}?startDate=${currYear - 1}-${month}-${day}&endDate=${currYear}-${month}-${day}`;
-			console.log(reqURL)
-			request.get(reqURL,{ auth: {bearer: token}}, function(err, response, body) {
-					console.log("body: ", body);
-	    	 	if (response && response.statusCode === 200) {
-	    	 		console.log(response);
-	  	 			if (isMalLink(body)) {
-							ret[ipAddr] = '';
-	  	 			}
-	  	 			console.log('Link works');
-	    	 	} else {
-	    	 		console.log(err);
-	    	 	}
-	    		if (++count === total) {
-	    				res.json({ data: ret });
-	    		}
-	  		});
+			request.get(reqURL, { auth: {bearer: token}}, function(err, response, body) {
+    	 	if (response && response.statusCode === 200) {
+  	 			if (isMalLink(body)) {
+						ret.push(origUrl);
+  	 			}
+    	 	} else {
+    	 		console.log(err);
+    	 	}
+    		if (++count === total) {
+    			console.log("RETURN: ", ret)
+    				res.json({ data: ret });
+    		}
+  		});
 	  }
 	}
 }
 
 function isMalLink(cymonResponse) {
-	console.log(cymonResponse);
-	return cymonResponse.total > 0;
+	return JSON.parse(cymonResponse).total > 0;
 }
 
 function getIpAddress(origurl, callback) {
@@ -147,7 +146,6 @@ function getIpAddress(origurl, callback) {
 	    }
 	}
 	request(options, function (err, res, body) {
-		console.log("HEAD REQ:", res.statusCode);
 		if (err) {
 			callback(null);
 			return;
@@ -157,8 +155,34 @@ function getIpAddress(origurl, callback) {
 			let urlStart = res.headers.refresh.indexOf('URL=') + 'URL='.length;
 			finalAddress = res.headers.refresh.slice(urlStart);  
 		}
-		dns.lookup('google.com', dns_options, (err, address, family) => { console.log("IPADDR:", address);callback(err ? null : address); });
+		finalAddress = extractHostname(finalAddress);
+		dns.lookup(finalAddress, dns_options, (err, address, family) => {
+			if (err) {
+				callback(null);
+			} else {
+				callback(address, origurl);
+			}
+		});
 	});
+}
+
+function extractHostname(url) {
+    var hostname;
+    //find & remove protocol (http, ftp, etc.) and get hostname
+
+    if (url.indexOf("://") > -1) {
+        hostname = url.split('/')[2];
+    }
+    else {
+        hostname = url.split('/')[0];
+    }
+
+    //find & remove port number
+    hostname = hostname.split(':')[0];
+    //find & remove "?"
+    hostname = hostname.split('?')[0];
+
+    return hostname;
 }
 
 // START THE SERVER
