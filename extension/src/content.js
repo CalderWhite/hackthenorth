@@ -55,10 +55,10 @@ const index = {
   "https://www.facebook.com": scrapeFbMini
 }
 // Icon inserting function
-function markBadLinks(nodes,data){
-  console.log(nodes,data);
+function markBadLinks(data){
+  console.log(data);
   // this could be optimized, but it doesn't really matter in the scheme of things.
-  for(var i=0;i<nodes.length;i++){
+  for(var i=0;i<Object.keys(data).length;i++){
     if(!data[i]){
       nodes[i].className = "e123456789";
     }
@@ -74,6 +74,9 @@ function main(){
         var data = index[k[i]]();
         var nodes = data[0];
         var links = data[1];
+        for(var j=0;j<nodes.length;j++){
+          nodes[j].id=links[j];
+        }
         chrome.runtime.sendMessage({
           "links":links,
           data:''
@@ -82,7 +85,7 @@ function main(){
             console.log(res);
             //alert("An error occurred in background.js");
           } else{
-            markBadLinks(nodes,res);
+            markBadLinks(links,res);
           }
         })
       }
