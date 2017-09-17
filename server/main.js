@@ -116,7 +116,7 @@ function getIpAddress(origurl, callback) {
 			callback(null);
 		}
 		let finalAddress = origurl;
-		if (res.headers.refresh !== 'undefined') {
+		if (res.headers.refresh !== undefined) {
 			let urlStart = res.headers.refresh.indexOf('URL=') + 'URL='.length;
 			finalAddress = res.headers.refresh.slice(urlStart);  
 		}
