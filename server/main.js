@@ -40,10 +40,33 @@ router.route('/')
 router.route('/reports')
 	.post(genReport);
 
-function genReport() {
-
+function genReport(input, res) {
+	var body = [];
+	input.forEach(report => {
+		body.push({
+			feed_id: 'AV6Ose5vdgijOqSiMyIp',
+			title: report.title,
+			description: report.description,
+			tags: ['malware'],
+			ioc: {'url': report.url}
+		})
+	});
+	request({
+		method: 'POST',
+		url: 'https://api.cymon.io/v2/ioc/submit/bulk',
+		headers: {
+				'Content-Type': 'application/json',
+				'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc19wcmVtaXVtIjowLCJpc19zdXBlcnVzZXIiOjAsImRhdGVfam9pbmVkIjoiMjAxNy0wOS0xN1QwNToxNDo1OC43NDBaIiwidXNlcm5hbWUiOiJodG4yMDE3IiwiaXNfYWN0aXZlIjoxLCJsYXN0X2xvZ2luIjoiMjAxNy0wOS0xN1QwNjozOTo0Ni41MzdaIiwiaXNfc3RhZmYiOjAsImlhdCI6MTUwNTYzMjQ1OSwiZXhwIjoxNTA1Njc1NjU5fQ.pWnbCNqUBcfFc5KmjbPfp5FBatDhFZUqaf2vfEJ6z2Q'
+				},
+		body: body
+	},
+	function (error, response, body) {
+			console.log('Status:', response.statusCode);
+			console.log('Headers:', JSON.stringify(response.headers));
+			console.log('Response:', response.body);
+	});
+	res.json({ success: true});
 }
-
 
 request({
   method: 'POST',
@@ -59,6 +82,7 @@ request({
   token = JSON.parse(response.body).jwt;
   console.log(token);
 });
+
 
 function getSiteRatings(req, res) {
 	currDate = new Date();
