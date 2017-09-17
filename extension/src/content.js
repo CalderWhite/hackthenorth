@@ -33,15 +33,14 @@ function scrapeGmail(){
   return [nodes,links];
 }
 function scrapeFbMini(){
-  return [[], []];
   var parents = $("._d97");
   var nodes = [];
   var links = [];
   for(var i=0;i<parents.length;i++){
-    var a = $(parents[i]).find("a").each(function() {
-    nodes.push(this);
-    links.push($(this).attr('href'));
-  });
+    $(parents[i]).find("a").each(function() {
+      nodes.push(this);
+      links.push($(this).attr('href'));
+    });
   }
   return [nodes,links];
 }
@@ -61,6 +60,7 @@ function markBadLinks(resp){
       $('a[href="' + link + '"]').css("outline", "1px solid  #cc0033");
     });
   }
+}
 
 // main function
 function main(){
@@ -72,12 +72,9 @@ function main(){
         if (!data) {
           return;
         }
+
         var nodes = data[0];
         var links = data[1];
-        for(var j=0;j<nodes.length;j++){
-          nodes[j].id=links[j];
-        }
-        console.log("SHOULD HAVE NODES")
         chrome.runtime.sendMessage({
           "links":links,
           "data":''
@@ -86,6 +83,7 @@ function main(){
             console.log("RESULT FAILURE");
             //alert("An error occurred in background.js");
           } else {
+            console.log(res)
             markBadLinks(res);
           }
         })

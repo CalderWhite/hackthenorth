@@ -10,7 +10,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
 	}
 	$.post("http://"+HOST+":"+PORT+"/api",{links:request.links})
 	.done(function(data){
-	  callback("testasdfasdf");
+	  callback(data);
 	})
 	.fail(function(){
 	  callback(null);
