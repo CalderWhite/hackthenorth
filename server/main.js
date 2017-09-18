@@ -4,6 +4,7 @@
 // =============================================================================
 
 // call the packages we need
+var firebase = require('./firebase.js');
 var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
@@ -18,6 +19,7 @@ app.use(bodyParser.json());
 
 var port = process.env.PORT || 8080;        // set our port
 const dns_options = {family: 4, hints: dns.ADDRCONFIG | dns.V4MAPPED};
+var db = new firebase.Database();
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -37,35 +39,50 @@ app.use('/api', router);
 router.route('/')
 	.post(getSiteRatings);
 
-router.route('/reports')
-	.post(genReport);
+router.route('/report')
+	.post(report);
 
-function genReport(input, res) {
-	var body = [];
-	input.forEach(report => {
-		body.push({
-			feed_id: 'AV6Ose5vdgijOqSiMyIp',
-			title: report.title,
-			description: report.description,
-			tags: ['malware'],
-			ioc: {'url': report.url}
-		})
+function report(req, res) {
+	console.log("<<<<<<<<>>>>>>>>>>>")
+	var count = 0;
+	db.getDomain(req.body.url, (dbObject) => {
+		if (dbObject.count === 4) {
+			dbObject.desc.forEach((desc) => genReport(req.body.url, desc, res));
+		} else {
+			db.updateDomain(req.body.url, req.body.title);
+			res.json({success: true});
+		}
 	});
-	request({
-		method: 'POST',
-		url: 'https://api.cymon.io/v2/ioc/submit/bulk',
-		headers: {
-				'Content-Type': 'application/json',
-				'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc19wcmVtaXVtIjowLCJpc19zdXBlcnVzZXIiOjAsImRhdGVfam9pbmVkIjoiMjAxNy0wOS0xN1QwNToxNDo1OC43NDBaIiwidXNlcm5hbWUiOiJodG4yMDE3IiwiaXNfYWN0aXZlIjoxLCJsYXN0X2xvZ2luIjoiMjAxNy0wOS0xN1QwNjozOTo0Ni41MzdaIiwiaXNfc3RhZmYiOjAsImlhdCI6MTUwNTYzMjQ1OSwiZXhwIjoxNTA1Njc1NjU5fQ.pWnbCNqUBcfFc5KmjbPfp5FBatDhFZUqaf2vfEJ6z2Q'
-				},
-		body: body
-	},
-	function (error, response, body) {
+
+	function genReport(url, desc, res) {
+		var body = [];
+		input.forEach(report => {
+			body.push({
+				feed_id: 'AV6Ose5vdgijOqSiMyIp',
+				title: desc,
+				description: desc,
+				tags: ['malware'],
+				ioc: {'url': url}
+			})
+		});
+		request({
+			method: 'POST',
+			url: 'https://api.cymon.io/v2/ioc/submit/bulk',
+			headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc19wcmVtaXVtIjowLCJpc19zdXBlcnVzZXIiOjAsImRhdGVfam9pbmVkIjoiMjAxNy0wOS0xN1QwNToxNDo1OC43NDBaIiwidXNlcm5hbWUiOiJodG4yMDE3IiwiaXNfYWN0aXZlIjoxLCJsYXN0X2xvZ2luIjoiMjAxNy0wOS0xN1QwNjozOTo0Ni41MzdaIiwiaXNfc3RhZmYiOjAsImlhdCI6MTUwNTYzMjQ1OSwiZXhwIjoxNTA1Njc1NjU5fQ.pWnbCNqUBcfFc5KmjbPfp5FBatDhFZUqaf2vfEJ6z2Q'
+					},
+			body: body
+		},
+		function (error, response, body) {
 			console.log('Status:', response.statusCode);
 			console.log('Headers:', JSON.stringify(response.headers));
 			console.log('Response:', response.body);
-	});
-	res.json({ success: true});
+			if (++count === 5) {
+				res.json({ success: true});
+			}
+		});
+	}
 }
 
 request({
@@ -92,7 +109,8 @@ function getSiteRatings(req, res) {
 	}
 	let total = req.body.links.length,
 			count = 0
-			ret = [];
+			ret = [],
+			descs = [];
 	req.body.links.forEach((link) => {
 		getIpAddress(link, genStatusObj);
 	});
@@ -101,7 +119,7 @@ function getSiteRatings(req, res) {
 		if (!ipAddr) {
 			if (++count === total) {
 				console.log("RETURN: ", ret)
-    		res.json({ data: ret });
+    		res.json({ data: ret, descs: descs });
     	}
 		} else {
 			let currYear = currDate.getFullYear();
@@ -113,18 +131,24 @@ function getSiteRatings(req, res) {
 			if (day.toString().length ===1) {
 				day = '0'+ day;
 			}
-			let reqURL = `https://api.cymon.io/v2/ioc/search/ip/${ipAddr}?startDate=${currYear - 1}-${month}-${day}&endDate=${currYear}-${month}-${day}`;
+			let reqURL = `https://api.cymon.io/v2/ioc/search/ip/${ipAddr}?startDate=${currYear - 2}-${month}-${day}&endDate=${currYear}-${month}-${day}`;
 			request.get(reqURL, { auth: {bearer: token}}, function(err, response, body) {
     	 	if (response && response.statusCode === 200) {
-  	 			if (isMalLink(body)) {
+    	 		let data = JSON.parse(body);
+  	 			if (isMalLink(data)) {
 						ret.push(origUrl);
+						if(data.hits && data.hits.length > 0) {
+							descs.push(data.hits[0].title);
+						} else {
+							descs.push("");
+						}
+
   	 			}
     	 	} else {
     	 		console.log(err);
     	 	}
     		if (++count === total) {
-    			console.log("RETURN: ", ret)
-    				res.json({ data: ret });
+    				res.json({ data: ret, descs: descs });
     		}
   		});
 	  }
@@ -132,7 +156,7 @@ function getSiteRatings(req, res) {
 }
 
 function isMalLink(cymonResponse) {
-	return JSON.parse(cymonResponse).total > 0;
+	return cymonResponse.total > 0;
 }
 
 function getIpAddress(origurl, callback) {

@@ -36,3 +36,5 @@ function Database(){
 		});
 	}
 }
+
+module.exports = { Database: Database }
